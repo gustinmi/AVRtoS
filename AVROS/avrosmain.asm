@@ -5,9 +5,7 @@
 */ 
 
 .equ TIME_SLICE = 1953 ; timer (prescaler 8) time slice unit for 1/1024 s
-.equ LED_ERR = 0 ; Select error red led
-.equ LED_OK = 1 ; Select ok green led
-.equ LED_OK_PIN = 8 ; digital pin 13
+
 
 ; ********************************  KERNEL VARIABLES (7 bytes)
 .dseg
@@ -32,7 +30,7 @@ TIMF:	.byte 1 ; rts fractions
 		jmp _SCHINT; TIMER1_COMPA ; <0x0016> 	OC1A Timer/Counter1 Compare Match A
 
 ; =============================   RESET
-
+; we must initialize stack pointer for soubroutine calls
 _START: ldi r16, high(RAMEND) ; initialize stack pointer (end of SRAM upwards)
 		out SPH, r16 ; Set Stack Pointer to top of RAM
 		ldi r16, low(RAMEND)
@@ -54,18 +52,20 @@ INIT: 	cli ; disable all interrupts
 		; initialize SCHPTR; can only use Z register for FLASH
 		ldi ZL, low(ptrs << 1)	; load start of table of pointers 
 		ldi ZH, high(ptrs << 1) ; (points to FLASH )
-		sts SCHPTR, ZH			; store FLASH pointer to SRAM (big endian)
-		sts SCHPTR+1, ZL 
+		sts SCHPTR, ZH			; 4 store FLASH pointer to SRAM (big endian)
+		sts SCHPTR+1, ZL 		; 4
+		
+		; store 0 to SRAM var
+		sts SCHTST, r1 ; 2 initilize SRAM vars
+		sts TIMH, r1 ; 2 initilize SRAM vars
+		sts TIMM, r1 ; 2 initilize SRAM vars
+		sts TIMS, r1 ; 2 initilize SRAM vars
+		sts TIMF, r1 ; 2 initilize SRAM vars
+	    
+		; configure IO ports
+		sbi DDRD, DDRB5 ; PORTB0 will be output
 
-		sts SCHTST, r1 ; store 0 to SRAM var
-		sts TIMH, r1; initilize SRAM vars
-		sts TIMM, r1; initilize SRAM vars
-		sts TIMS, r1; initilize SRAM vars
-		sts TIMF, r1; initilize SRAM vars
-
-		sbi DDRB, DDRB0 ; PORTB0 will be output
-
-		ret ; return to start
+		ret ; 4 return to start
 
 ; *************************************** oc1 interrupt	routine	
 ; should not be interrupted by external interrupts or CPU
@@ -234,13 +234,13 @@ LEDOK_OFF:
 
 ; flips the output port bit 8~10 cycles
 LED_FLIP:
-		in r0, PORTB ; 1 load current state
+		in r0, PORTD ; 1 load current state
 		tst r0 ; 1 set flags
 		brne LED_CLEAR ; 2 branch if Z=0 (not equal)
-		sbi    PORTB, PORTB0	; 2 set bit
+		sbi    PORTD, PORTB5	; 2 set bit
 		ret                     ; 4
 LED_CLEAR:
-		cbi    PORTB, PORTB0	; 2 clear bit
+		cbi    PORTD, PORTB5	; 2 clear bit
 		ret	
 
 ; =====================    MAIN PROGRAM ===============================

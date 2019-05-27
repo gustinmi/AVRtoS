@@ -15,7 +15,7 @@
     <Name>AVROS</Name>
     <RootNamespace>AVROS</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
-    <EntryFile>$(MSBuildProjectDirectory)\avrosmain.asm</EntryFile>
+    <EntryFile>$(MSBuildProjectDirectory)\avros_lcd_driver.asm</EntryFile>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
     <CacheFlash>true</CacheFlash>
@@ -89,7 +89,22 @@
     <Compile Include="avrosmain.asm">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="avros_lcd_driver.asm">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="buffers.asm">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="debugging.asm">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="div8u.inc">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="eeprom.asm">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="hd44780.inc">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="macrodefs.inc">
@@ -104,6 +119,9 @@
     <Compile Include="usart.asm">
       <SubType>Code</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="LCD44780" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Assembler.targets" />
 </Project>
