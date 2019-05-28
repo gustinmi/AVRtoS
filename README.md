@@ -8,3 +8,6 @@ Originally written as a port of Motorola's 68HC11 learning operating system, des
 Main purpose is learning the ATMEGA 328PU internals and to get glimpse into realtime kernel design.
 
 Project includes some important concepts as a separete modules, in order to demonstrate only one topic.
+
+![AVROS AVR Arduino real-time operating system](https://docs.google.com/drawings/d/e/2PACX-1vQEklykQxAZ16jxRNPSTgDQtxXqDBD045pV0PqP9_qf-mK30fVFLbMAqmDiIDicrVByWo7ejt2p0I_c/pub?w=832&h=621)
+
