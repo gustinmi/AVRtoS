@@ -1,6 +1,6 @@
-# AVRtoS
+# AVROS
 
-AVR - Arduino Realtime operating system. With preemptive realtime scheduler written in assembler. Optimized for performance. Maximal utilization of onboard EEPROM, SRAM, FLASH.
+AVR - Arduino Realtime operating system. With preemptive realtime scheduler written in assembler. Optimized for performance. Maximal utilization of onboard EEPROM, SRAM, FLASH. 
 
 Support for Realtime system clock,  4x4 keyboard, LCD driver, stepper motor driver, ADC and UART Serial driver. Uses a realtime interrupt scheduler (time slice-ing) for implementing non blocking drivers that pool slow devices and gave away CPU to main program, in case previous operation is not yet completed. 
 
