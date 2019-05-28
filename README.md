@@ -11,3 +11,16 @@ Project includes some important concepts as a separete modules, in order to demo
 
 ![AVROS AVR Arduino real-time operating system](https://docs.google.com/drawings/d/e/2PACX-1vQEklykQxAZ16jxRNPSTgDQtxXqDBD045pV0PqP9_qf-mK30fVFLbMAqmDiIDicrVByWo7ejt2p0I_c/pub?w=832&h=621)
 
+# Deploy with avrdude.exe
+
+Adapt -PCOM port and -b baudrate to suite your needs. COM port is assigned by system, baudrate by bootloader.
+Main file is `avrosmain.asm`
+
+```
+c:\Program Files (x86)\Arduino\hardware\tools\avr\bin\avrdude.exe -C "C:\Program Files (x86)\Arduino\hardware\tools\avr\etc\avrdude.conf" -v -patmega328p -carduino -PCOM8 -b115200 -D -Uflash:w:$(TargetDir)$(TargetName).hex:i 
+```
+
+Include EEPROM data (if any)
+```
+-Ueeprom:w:$(TargetDir)$(TargetName).eep:i
+```
