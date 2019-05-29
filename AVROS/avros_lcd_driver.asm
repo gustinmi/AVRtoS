@@ -215,8 +215,9 @@ LCD_Init:
 	ldi		r17, 3 ; repeat 3 times
 
 InitLoop:
-	; RS RW DB7 DB6 DB5 DB4 DB3 DB2 DB1 DB0
-	; 0  0  0   0   1   1   *   *   *   *
+	; Software initialization of display
+	; DB7 DB6 DB5 DB4 DB3 DB2 DB1 DB0
+	; 0   0   1   1   *   *   *   *
 	; BusyFlag is not working yet before this instruction
 	ldi		r16, 0b000_0011
 	rcall	LCD_WriteNibble
@@ -225,19 +226,25 @@ InitLoop:
 	dec		r17
 	brne	InitLoop
 
-	ldi		r16, 0x02
+	ldi		r16, 0b0000_0010
 	rcall	LCD_WriteNibble
-
 	ldi		r16, 1 ; delay wait 1 ms
 	rcall	WaitMiliseconds
 
 	; 4 bit interface, 2 lines, font size, 
+	; DB7 DB6 DB5 DB4 DB3 DB2 DB1 DB0
+	; 0    0   1   0   1   0   0  0  
 	ldi		r16, HD44780_FUNCTION_SET | HD44780_FONT5x7 | HD44780_TWO_LINE | HD44780_4_BIT
 	rcall	LCD_WriteCommand
 
+	; display on off
+	; RS RW DB7 DB6 DB5 DB4 DB3 DB2 DB1 DB0
+	;                               Clr Blink off 
+	; 0  0  0   0   0   0   0   0   0   1
 	ldi		r16, HD44780_DISPLAY_ONOFF | HD44780_DISPLAY_OFF
 	rcall	LCD_WriteCommand
 
+	; clear display
 	ldi		r16, HD44780_CLEAR
 	rcall	LCD_WriteCommand
 
