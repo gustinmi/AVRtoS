@@ -8,6 +8,10 @@
 	#define HD44780_EM_DECREMENT		0
 	#define HD44780_EM_INCREMENT		2
 
+; D = 0; Display off
+; C = 0; Cursor off
+; B = 0; Blinking off
+
 #define HD44780_DISPLAY_ONOFF			0x08
 	#define HD44780_DISPLAY_OFF			0
 	#define HD44780_DISPLAY_ON			4
