@@ -1,9 +1,21 @@
-/*
- * buffers.asm
- *
- *  Created: 26.5.2019 19:05:09
- *   Author: gustin
- */ 
+; Circular buffer implementation
+; Prevent moving data by moving pointers to data
+; Buffer is solving different devices speed.
+; buffers.asm
+;
+; Begin
+; 00  01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0f
+; ----------------------------------------------
+; |PTR B|       place for data           | PTRE|
+; |  |02|  |  |  |  |  |  |  |  |  |  |  |  |02|
+; ----------------------------------------------
+;        ^
+;        |
+;	   PTRB, PTRE
+;
+;  Created: 26.5.2019 19:05:09
+;   Author: gustin
+; 
 
  .dseg
 .org SRAM_START
@@ -11,7 +23,7 @@
 ; pointers for static circular buffers
 
 ; UART transmitting buffer with a capacity of 64 characters.
-TRAB:  .byte 3+64 ; transmitting buffer begin 
+TRAB:  .byte 3+16 ; transmitting buffer begin 
 TRAE: .byte 2 ; transmitting buffer end 
 
 ; UART receiving buffer with capacity of 8 chars
@@ -55,26 +67,27 @@ TRACHR:
 
 	; Z pointer to konec
 
-	ldi ZH, high(TRAE) ; naloži logièni konec medpomnilnika v X
-	ldi ZL, low(TRAE) 
+	lds ZH, TRAE ; naloži logièni konec medpomnilnika v X
+	lds ZL, TRAE+1 
 	st Z+, r16	 ; in zapiše znak iz r16 v medpomnilnik in poveèa kazalec Z za 1
 	
-	; X pointer to physical end
+	; X pointer to physical end 
 
-	ldi XL, LOW(TRAE) ; naloži fizièni konec medpomnilnika
-	ldi XH, HIGH(TRAE) ;  
+	ldi XH, high(TRAE) ; naloži fizièni konec medpomnilnika
+	ldi XL, low(TRAE) ;  
 	
 	cp ZL, XL ; in ga primerja s fiziènim koncem medpomnilnika  
 	cpc ZH, XH ; 
-	brne TRAC1 ; Èe presežemo fizièni konec, skoèi, sicer (Branch if not equal)
-	ldi ZH, high(TRAB+2) ; se prestavi na zaèetek
-	ldi ZL, low(TRAB+2) ; prekoèi na zaèetek
+	brne TRAC1 ; preveri, ali presegamo fizièni konec, 
+	; Èe presežemo fizièni konec
+	ldi ZH, high(TRAB+2) ; naloži fizièni zaèetek 
+	ldi ZL, low(TRAB+2) ; (prekoèi na zaèetek)
 
 TRAC1:
 	
 	; naloži fizièni zaèetek medpomnilnika v X
-	ldi XH, high(TRAB) ; prekoèi na zaèetek
-	ldi XL, low(TRAB) ; prekoèi na zaèetek
+	lds XH, TRAB ; prekoèi na zaèetek
+	lds XL, TRAB+1 ; prekoèi na zaèetek
 
 	cp ZL, XL ; primerja logièni konec z zaèetkom 
 	cpc ZH, XH ; 
