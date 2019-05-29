@@ -1,5 +1,17 @@
 
-; This DVUS macro is used to compute number of cycles for specified time in microseconds.
+; --------------------  Liquid Crystal Display Driver HD44780
+; 4 Bit interface implementation
+; Signals :
+; RS RW DB7 DB6 DB5 DB4 DB3 DB2 DB1 DB0
+; Description
+; RS  0 instruction register for write busy flag, address counter for read
+;     1 Data register (read and write)
+; RW  1 Read
+;	  0 Write
+; E   Starts data read / write
+; DB4 .. DB7 bidirectional Data / instruction 
+; DB 7 Busy flag   (RS 0, RW 1)
+
 
 .include "hd44780.inc"	; LCD driver options
 
@@ -195,7 +207,7 @@ LCD_Init:
 
 	; first take care of RW signal on PORTD, LCD_RW pin
 	sbi		DDRD, LCD_RW ; setup for LCD_RW signal
-	cbi		PORTD, LCD_RW ; set LOW  
+	cbi		PORTD, LCD_RW ; set LOW (writing mode) 
 
 	; RS RW DB7 DB6 DB5 DB4 DB3 DB2 DB1 DB0
 	; 0  0  0   0   1   1   *   *   *   *
@@ -212,9 +224,10 @@ LCD_Init:
 	ldi		r16, 100 ; delay wait for 100ms
 	rcall	WaitMiliseconds
 
+	
 	ldi		r17, 3 ; repeat 3 times
-
 InitLoop:
+	; main initializatin
 	; RS RW DB7 DB6 DB5 DB4 DB3 DB2 DB1 DB0
 	; 0  0  0   0   1   1   *   *   *   *
 	; BusyFlag is not working yet before this instruction
@@ -225,6 +238,8 @@ InitLoop:
 	dec		r17
 	brne	InitLoop
 
+	; RS RW DB7 DB6 DB5 DB4 DB3 DB2 DB1 DB0
+	; 0  0  0   0   1   0   *   *   *   *
 	ldi		r16, 0x02
 	rcall	LCD_WriteNibble
 
@@ -250,16 +265,14 @@ InitLoop:
 	ret
 
 ; ------------------------------------
-; check busy  BF
+; check busy flag BF on data port 7
 CHK_BUSY:
  	sbi		LCD_DDR, LCD_D7 ; PortD for D7 pin is inpuit
-	sbi		LCD_PORT, LCD_EN
-	sbi		LCD_PORT, LCD_RS 
-	sbi		LCD_PORT, LCD_RW 
-	cbi		LCD_PORT, LCD_EN
+	sbi		LCD_PORT, LCD_EN ; positive front
+	sbi		LCD_PORT, LCD_RS ; positive
+	sbi		LCD_PORT, LCD_RW ; set reading mode  
+	cbi		LCD_PORT, LCD_EN ; negative front
 	ret
-
-
 
 
 ;------------------------------------------------------------------------------
