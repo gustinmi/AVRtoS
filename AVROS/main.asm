@@ -19,10 +19,6 @@
 
 SCHPTR:	.byte 2 ; pointer to FLASH table of pointers
 SCHTST:	.byte 1 ; status flag when ongoing interrupt is in place
-TIMH:	.byte 1 ; realtime clock driver hours
-TIMM:	.byte 1 ; rts minutes
-TIMS:	.byte 1 ; rts seconds
-TIMF:	.byte 1 ; rts fractions
 
 ; =========================   FLASH section
 

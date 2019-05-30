@@ -65,7 +65,6 @@ reset:
 
 loop:	rjmp loop
 
-
 .include "div8u.inc" ; divide soubroutine
 
 ; ==================

@@ -2,6 +2,7 @@
 .cseg
 
 .org FLASHSTART ; 0x0000
+
 		jmp _START ; <0x0000> RESET		External Pin Reset, Power-on Reset,  Reset
 
 .org 0x0034
@@ -9,7 +10,7 @@
 SerialInit:
 		clr r17
 		sts UBRR0H, r17
-		ldi r16, 0x19 ;Set BAUD rate to 9600 (assuming a 16MHz system clock)
+		ldi r16, 0x19 ; Set BAUD rate to 9600 (assuming a 16MHz system clock)
 		sts UBRR0L, r16
 
 		;Enable transmitter and receiver.
@@ -21,25 +22,25 @@ SerialInit:
 		;with the serial monitor of the Arduino IDE.
 		ret
 
-USART_TRA:
-	; put data into transmit buffer (it will send data automatically)
-	sts UDR0, r16 ; put to output buffer
-	ret
+USART_Receive:
+		; Wait for data to be received
+		lds r17, UCSR0A
+		sbrs r17, RXC0
+		rjmp USART_Receive
+		; Get and return received data from buffer
+		lds r16, UDR0
+		ret
 
+USART_TRA:
+		; put data into transmit buffer (it will send data automatically)
+		sts UDR0, r16 ; put to output buffer
+		ret
 
 _START:
-		
-		sbi DDRB, DDRB5   ; PORTB0 will be output
-		sbi PORTB, PORTB5 ; set portb 0 high
-		sbi DDRB, DDRB0   ; PORTB0 will be output
-		sbi PORTB, PORTB0 ; set portb 0 high
-		
-		cli ;Disable interrupts while doing setup
-
-		;Set up USART
+		; Set up USART (baud rate, frame format)
 		call SerialInit
 
-		sei ;Allow interrupts
+		; We will trigger test transmit of string array definied in FLASH
 
 		;Point Z-Register to our message and send.
 		;Address of message is shifted left one bit since data in

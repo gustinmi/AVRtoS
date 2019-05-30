@@ -1,3 +1,7 @@
+; AVRtoS -  AVR Realtime operating system kernel
+; Author: Mitja Gustin gustinmi [at] gmail [dot] com
+; Testing interrupt timers
+
 ;==============
 ; Declarations:
 

@@ -1,8 +1,7 @@
 /*
  * debugging.asm
- *
- *  Created: 26.5.2019 15:20:11
- *   Author: gustin
+ * Temporary test file for debugging in simulator
+ * Author: Mitja Gustin gustinmi [at] gmail [dot] com
  */ 
 
  .cseg

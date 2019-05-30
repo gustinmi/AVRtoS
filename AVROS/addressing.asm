@@ -1,11 +1,15 @@
 /*
  * FILE: addressing.asm
- * Addressing of FLASH and SRAM
- * Created: 9. 05. 2019 19:16:50
- * Author: gustin
+ * Addressing of FLASH and SRAM. Execute 4 tasks defined in FLASH
+ * Pointer to current task is saved into SRAM.
+ * It shows conteptualoly, how flash pointers (address) is saved into
+ * SRAM, where it occupys 2 bytes ( 1 word)
+ * Author: Mitja Gustin gustinmi [at] gmail [dot] com
  */ 
  .dseg
- SCHPTR: .byte 2 ; pointer to pointer table in FLASH
+
+ SCHPTR: .byte 2 ; pointer to current task (pointer) table in FLASH
+ ; two locations are reserved because FLASH addresses are 16 bit in length
 
 .cseg
 .org 0x0000
@@ -16,12 +20,14 @@
 	ldi r16, low(RAMEND)
 	out SPL, r16
 	
-	eor	r1, r1 ; empty r1
+	eor	r1, r1 ; empty r1, it's a convention
+	
 	; initialize SCHPTR; can only use Z register for FLASH
+	; we will shift 14bit long flash addresses by one
+	; so that we can get lower and higher data fro one 16 bit cell
+	; into 8bit registers
 	ldi ZL, low(ptrs << 1)	; load start of table of pointers 
 	ldi ZH, high(ptrs << 1) ; (points to FLASH )
-	;lpm r16, Z+				; put it into register pair, increment Z
-	;lpm r17, Z				; 
 	sts SCHPTR, ZH			; store FLASH pointer to SRAM (big endian)
 	sts SCHPTR+1, ZL 
 
@@ -44,18 +50,17 @@ SCHOK:
 err:
 	rjmp err ; hang in error loop 
 
+; Definition of four tasks
+
 loop:           
 	inc r23 ; dummy
-	inc r23 ; dummy 
 	ret ; return to scheduler 
 	
 bra: 
-	inc r23 ; dummy
 	inc r23 ; dummy 
 	ret ; return to scheduler
 
-
-.org 0x03fb ; put scheduler table at the and of FLASH
+.org 0x03fb ; align scheduler ptr table with the FLASH end
 
 ptrs: ; pointer array to interrrupt handlers; scheduler will pick one after one
 	.dw bra
