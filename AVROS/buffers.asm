@@ -1,5 +1,5 @@
 ; Circular buffer implementation
-; Prevent moving data by moving pointers to data
+; Prevent moving data by moving only pointers to data
 ; Buffer is solving different devices speed.
 ; buffers.asm
 ;
@@ -12,14 +12,18 @@
 ;        ^
 ;        |
 ;	   PTRB, PTRE
-;
+;  PTRB = logical begin
+;  PTRE = logica end
 ;  Created: 26.5.2019 19:05:09
 ;   Author: gustin
 ; 
 
- .dseg
+#define TEST_BUFFERS 1
+#if TEST_BUFFERS > 0
+.dseg
 .org SRAM_START
-
+#endif
+	
 ; pointers for static circular buffers
 
 ; UART transmitting buffer with a capacity of 64 characters.
@@ -30,8 +34,11 @@ TRAE: .byte 2 ; transmitting buffer end
 RECB: .byte 3+9 ; receiving buffer begin 
 RECE: .byte 2 ; receiving buffer end 
 
-  .cseg
+
+#if TEST_BUFFERS > 0
+.cseg
 .org 0x0000
+#endif
 
 START: 
 	; Clear the UART transmitting buffer
@@ -102,3 +109,5 @@ TRAERR:
 	pop ZL ; restore Z
 	pop	ZH ; from stack
 	ret	   ; return
+
+
