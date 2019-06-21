@@ -1,0 +1,10 @@
+// stimuli file
+//$log UDR0
+//#2  delay in CLK
+0xC6 = 0x01	  // fill uart data register UDR0
+0x102 = 0xff
+UDR0 &= 0x41  // fill uart data register
+//DDRD = 0b00100000
+//$unlog UDR0
+//$break
+				 

@@ -15,7 +15,7 @@
     <Name>AVROS</Name>
     <RootNamespace>AVROS</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
-    <EntryFile>$(MSBuildProjectDirectory)\avros_lcd_driver.asm</EntryFile>
+    <EntryFile>$(MSBuildProjectDirectory)\avrosmain.asm</EntryFile>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
     <CacheFlash>true</CacheFlash>
@@ -56,6 +56,7 @@
       <ToolName>Simulator</ToolName>
     </com_atmel_avrdbg_tool_simulator>
     <avrtoolinterface />
+    <StimuliFile>C:\Users\gustin\Documents\Atmel Studio\7.0\AssemblerApplication1\AVROS\simulatorData.stim</StimuliFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
@@ -92,7 +93,7 @@
     <Compile Include="avros_lcd_driver.asm">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="buffers.asm">
+    <Compile Include="serialdriver.asm">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="debugging.asm">
@@ -104,13 +105,13 @@
     <Compile Include="eeprom.asm">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="hd44780.inc">
+    <Compile Include="configuration.inc">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="macrodefs.inc">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="main.asm">
+    <Compile Include="scheduler.asm">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="timer.asm">
@@ -122,6 +123,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="LCD44780" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="simulatorData.stim">
+      <SubType>Code</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Assembler.targets" />
 </Project>

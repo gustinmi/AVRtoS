@@ -13,7 +13,7 @@
 ; DB 7 Busy flag   (RS 0, RW 1)
 ; based on : http://en.radzio.dxp.pl/avr-mcu/hd44780-assembly-driver.html
 
-.include "hd44780.inc"	; LCD driver options
+.include "configuration.inc"	; LCD driver options
 
 .equ	LCD_PORT 	= PORTB ; port B on AVR (PORT 6 and 7 have XTAL!!)
 .equ	LCD_DDR		= DDRB ; directions of pins on port B

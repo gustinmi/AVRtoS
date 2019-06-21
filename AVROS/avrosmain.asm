@@ -1,8 +1,11 @@
-/*
-* FILE: avros kernel v1
-* Preemptive task scheduler
-* Author: gustinmi@gmail.com
-*/ 
+;
+; FILE: avros kernel v1
+; Preemptive task scheduler
+; Author: gustinmi@gmail.com
+
+#define TEST_BUFFERS 0	; use serial driver as a library
+
+.include "configuration.inc"	; LCD driver options
 
 .equ TIME_SLICE = 1953 ; timer (prescaler 8) time slice unit for 1/1024 s
 
@@ -18,6 +21,16 @@ TIMM:	.byte 1 ; rts minutes
 TIMS:	.byte 1 ; rts seconds
 TIMF:	.byte 1 ; rts fractions
 
+; UART transmitting buffer with a capacity of 64 characters.
+TRAB:  .byte 3+8 ; transmitting buffer begin 
+TRAE: .byte 2 ; transmitting buffer end 
+
+; UART receiving buffer with capacity of 8 chars
+RECB: .byte 3+9 ; receiving buffer begin 
+RECE: .byte 2 ; receiving buffer end 
+DOLNIZ: .byte 1 ; length of RECSTR string
+HEAP: .byte 1 ; constant pointer to beginning of heap	(first free location after global variables)
+
 ; ******************************* DRIVER VARIABLES
 
 
@@ -29,15 +42,18 @@ TIMF:	.byte 1 ; rts fractions
 .org TIMER1_COMPAaddr ; 0x0016	
 		jmp _SCHINT; TIMER1_COMPA ; <0x0016> 	OC1A Timer/Counter1 Compare Match A
 
+.org 0x0060 ; start in flash section after the interupt routine handler pointers
+.include "serialdriver.asm"			; SCI serial driver
+
 ; =============================   RESET
-; we must initialize stack pointer for soubroutine calls
+; we must initialize stack pointer for subroutine calls
 _START: ldi r16, high(RAMEND) ; initialize stack pointer (end of SRAM upwards)
 		out SPH, r16 ; Set Stack Pointer to top of RAM
 		ldi r16, low(RAMEND)
 		out SPL, r16
 
 		call INIT ; initlize variables
-		call USART_INIT ; initialize USART0 interface
+		call UART_INIT ; initialize USART0 interface
 		call SCHON ; enable the scheduler / start timer
 		call MAIN ; main program loop
 
@@ -61,9 +77,27 @@ INIT: 	cli ; disable all interrupts
 		sts TIMM, r1 ; 2 initilize SRAM vars
 		sts TIMS, r1 ; 2 initilize SRAM vars
 		sts TIMF, r1 ; 2 initilize SRAM vars
+
+		; Clear the UART transmitting buffer
+		; (by making both pointers point to same location)
+		ldi ZH, high(TRAB+2) ; load	addres of first empty location
+		ldi ZL, low(TRAB+2) 
+		sts TRAB, ZH  ; store address to pointer TRAB
+		sts TRAB+1, ZL
+		sts TRAE, ZH ; store address to pointer TRAE
+		sts TRAE+1, ZL
+
+		; clear the UART receiving buffer
+		; (by making both pointers point to same location)
+		ldi ZH, high(RECB+2) ; load	 addres of first data
+		ldi ZL, low(RECB+2) 
+		sts RECB, ZH  ; store address to pointer TRAB
+		sts RECB+1, ZL
+		sts RECE, ZH ; store address to pointer TRAE
+		sts RECE+1, ZL
 	    
 		; configure IO ports
-		sbi DDRD, DDRB5 ; PORTB0 will be output
+		sbi DDRD, DDRD5 ; PORTB0 will be output
 
 		ret ; 4 return to start
 
@@ -176,7 +210,7 @@ TIM:	lds r20, TIMF ; 2 load fractions
 TIMRTS:	ret ; 4 return from subroutine
 
 KBD:	ret
-SCI:	ret
+;SCI:	ret ; defined in sci serial driver
 LED:	ret
 
 SCHRTS: ret ; void task (to fill scheduler)
@@ -185,41 +219,7 @@ SCHRTS: ret ; void task (to fill scheduler)
 ; LIBRARY 
 ; *******************************************
 
-; initilize USART 0 interface
-USART_INIT:
-		clr r17
-		sts UBRR0H, r17
-		ldi r16, 0x19 ;Set BAUD rate to 38400 (16MHz system clock)
-		sts UBRR0L, r16
 
-		;Enable transmitter and receiver.
-		ldi r16, (1<<RXEN0)|(1<<TXEN0)
-		sts UCSR0B, r16
-
-		;Not going to do anything with UCSR0C since the default
-		;values will give the 8:N:1 format needed to communicate
-		;with the serial monitor of the Arduino IDE.
-		ret
-
-USART_TRA:
-		; put data into transmit buffer (it will send data automatically)
-		sts UDR0, r16 ; put to output buffer
-		ret
-
-USART_REC:
-		lds r17, UCSR0A
-		sbrs r17, RXC0
-		ret
-		; get data from buffer
-		lds r16, UDR0
-		ret
-
-USART_FLUSH:
-		lds r16, UCSR0A
-		sbrs r16, TXC0
-		ret
-		lds r16, UDR0
-		rjmp USART_FLUSH
 
 ; ================  LED DRIVER 
 ; status leds
@@ -237,10 +237,10 @@ LED_FLIP:
 		in r0, PORTD ; 1 load current state
 		tst r0 ; 1 set flags
 		brne LED_CLEAR ; 2 branch if Z=0 (not equal)
-		sbi    PORTD, PORTB5	; 2 set bit
+		sbi    PORTD, PORTD5	; 2 set bit
 		ret                     ; 4
 LED_CLEAR:
-		cbi    PORTD, PORTB5	; 2 clear bit
+		cbi    PORTD, PORTD5	; 2 clear bit
 		ret	
 
 ; =====================    MAIN PROGRAM ===============================
@@ -249,10 +249,10 @@ MAIN:	rjmp MAIN
 
 ; ======================   TASK SCHEDULE
 
-.org 0x0300 ; put scheduler table at the and of FLASH
+; MUST ALIGN to address XX00 at zero byte, so that                                  
+.org 0x0300 ; align the scheduler table at the and of FLASH
 
 ; pointer array to interrrupt handlers; scheduler will pick one after one
-
 ptrs:
 		.dw TIM ; realtime clock driver
 		.dw LED ; led display driver
